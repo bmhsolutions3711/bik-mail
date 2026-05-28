@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>BIK Mail — Living Threads</title>
+<meta name="theme-color" content="#0a0d12" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+<link rel="apple-touch-icon" href="./icons/icon-192.png" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0d12;
+  --bg-2: #11161e;
+  --bg-3: #1a212c;
+  --line: #232b38;
+  --ink: #e9eef5;
+  --ink-2: #aab4c2;
+  --ink-3: #6b7689;
+  --mint: #A7E3CC;
+  --gold: #FFD600;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --red: #ef4444;
+  --violet: #b59dd3;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--ink); font-family: 'DM Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+body {
+  background:
+    radial-gradient(ellipse at top right, rgba(167,227,204,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom left, rgba(255,214,0,0.04) 0%, transparent 60%),
+    var(--bg);
+}
+
+/* App shell — full width, edge to edge */
+.app { width: 100%; max-width: 1400px; margin: 0 auto; min-height: 100vh; padding: 0 0 120px; }
+
+/* Top bar */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 32px 18px;
+  position: sticky; top: 0; z-index: 10;
+  background: linear-gradient(180deg, var(--bg) 80%, transparent 100%);
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--mint), #6fb89d);
+  display: grid; place-items: center; font-weight: 800; color: #0a0d12;
+  font-family: 'Barlow Condensed'; font-size: 24px;
+}
+.brand-name { font-family: 'Barlow Condensed'; font-weight: 600; letter-spacing: 0.5px; font-size: 26px; }
+.brand-name span { color: var(--mint); }
+
+/* Refresh button */
+.refresh-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 22px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 10px; color: var(--ink);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 17px; font-weight: 500;
+  cursor: pointer; transition: all 0.18s ease;
+  min-height: 50px;
+}
+.refresh-btn:hover {
+  border-color: var(--mint); color: var(--mint);
+  background: rgba(167,227,204,0.06);
+}
+.refresh-btn:active { transform: translateY(1px); }
+.refresh-btn:disabled {
+  opacity: 0.6; cursor: wait; border-color: var(--mint);
+  color: var(--mint);
+}
+.refresh-icon {
+  font-size: 22px; line-height: 1;
+  display: inline-block;
+}
+.refresh-btn.spinning .refresh-icon {
+  animation: spin 1.2s linear infinite;
+  color: var(--mint);
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.refresh-btn.done .refresh-icon { color: var(--mint); }
+.refresh-btn.error .refresh-icon { color: var(--red); }
+.refresh-status {
+  font-family: 'DM Mono'; font-size: 14px; color: var(--ink-3);
+  margin-left: 14px; display: inline-block;
+}
+.refresh-status.fresh { color: var(--mint); }
+@media (max-width: 480px) {
+  .refresh-label { display: none; }
+  .refresh-btn { padding: 12px 16px; }
+}
+
+/* Hero counter — BIG */
+.hero {
+  padding: 18px 32px 32px;
+  position: relative;
+}
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 15px; letter-spacing: 1.5px;
+  color: var(--ink-3); text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-eyebrow .live { width: 9px; height: 9px; border-radius: 50%; background: var(--mint); animation: pulse-mint 2.4s ease-in-out infinite; }
+@keyframes pulse-mint {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 12px rgba(167,227,204,0.6); }
+}
+.hero-numbers {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.hero-row {
+  font-family: 'Barlow Condensed'; font-weight: 800;
+  display: flex; align-items: baseline; gap: 22px;
+  line-height: 1.0;
+}
+.hero-num {
+  font-size: 130px; letter-spacing: -3px;
+}
+.hero-num.handled { color: var(--ink); }
+.hero-num.need { color: var(--mint); }
+.hero-num.need.zero { color: var(--mint); }
+.hero-num.need.has {
+  color: var(--yellow);
+  text-shadow: 0 0 32px rgba(234, 179, 8, 0.4);
+}
+.hero-label {
+  font-family: 'Barlow Condensed'; font-weight: 400; font-size: 36px;
+  color: var(--ink-2); letter-spacing: 1px; text-transform: lowercase;
+  padding-bottom: 14px;
+}
+.hero-zen {
+  margin-top: 22px; font-size: 19px; color: var(--ink-2);
+  font-style: italic; opacity: 0.95; line-height: 1.4;
+}
+
+/* Account chips — bigger tap targets */
+.chips {
+  display: flex; gap: 12px; padding: 8px 32px 22px; overflow-x: auto;
+  -ms-overflow-style: none; scrollbar-width: none; flex-wrap: wrap;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0;
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  font-size: 18px; font-weight: 500; color: var(--ink-2);
+  cursor: pointer; transition: all 0.18s ease;
+  display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  min-height: 50px;
+}
+.chip:hover { border-color: #34404f; color: var(--ink); }
+.chip.active {
+  background: var(--mint); color: #0a0d12; border-color: var(--mint);
+  font-weight: 600;
+}
+.chip-dot { width: 10px; height: 10px; border-radius: 50%; }
+.chip-count {
+  font-family: 'DM Mono'; font-size: 16px; font-weight: 600;
+  background: rgba(255,255,255,0.08); padding: 3px 10px; border-radius: 5px;
+}
+.chip.active .chip-count { background: rgba(0,0,0,0.18); }
+
+/* Section header */
+.sec-h {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 32px 12px;
+}
+.sec-title {
+  font-family: 'Barlow Condensed'; font-weight: 600;
+  font-size: 26px; letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--ink);
+}
+.sec-meta {
+  font-family: 'DM Mono'; font-size: 15px; color: var(--ink-3);
+  letter-spacing: 0.5px;
+}
+
+/* Living Thread cards — full width, generous */
+.threads { padding: 0 32px; display: flex; flex-direction: column; gap: 16px; }
+.thread {
+  position: relative;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px 24px 20px 28px;
+  overflow: hidden;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.thread:hover { transform: translateY(-1px); border-color: #34404f; }
+.thread::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  background: var(--ink-3);
+}
+.thread.green::before { background: var(--green); box-shadow: 0 0 16px rgba(34,197,94,0.45); }
+.thread.yellow::before { background: var(--yellow); box-shadow: 0 0 16px rgba(234,179,8,0.45); }
+.thread.red::before { background: var(--red); box-shadow: 0 0 18px rgba(239,68,68,0.55); }
+.thread.dim { opacity: 0.55; }
+.thread.dim::before { background: var(--ink-3); box-shadow: none; }
+
+.t-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.t-title-row { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+.pulse {
+  width: 16px; height: 16px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.pulse.green { background: var(--green); animation: pulse-g 3s ease-in-out infinite; }
+.pulse.yellow { background: var(--yellow); animation: pulse-y 3s ease-in-out infinite; }
+.pulse.red { background: var(--red); animation: pulse-r 1.8s ease-in-out infinite; }
+.pulse.gray { background: var(--ink-3); }
+@keyframes pulse-g {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+  50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+}
+@keyframes pulse-y {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(234,179,8,0.5); }
+  50% { box-shadow: 0 0 0 7px rgba(234,179,8,0); }
+}
+@keyframes pulse-r {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+  50% { box-shadow: 0 0 0 9px rgba(239,68,68,0); }
+}
+
+.t-title {
+  font-size: 22px; font-weight: 600; letter-spacing: -0.2px;
+  color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex: 1; min-width: 0; line-height: 1.3;
+}
+.t-type {
+  font-family: 'DM Mono'; font-size: 13px;
+  color: var(--ink-3); letter-spacing: 1px; text-transform: uppercase;
+  flex-shrink: 0;
+  padding-top: 6px;
+}
+
+.t-status {
+  margin-top: 14px;
+  font-size: 18px; color: var(--ink-2); line-height: 1.45;
+}
+.t-status .accent { color: var(--ink); font-weight: 500; }
+.t-status .num { font-family: 'DM Mono'; color: var(--mint); }
+.t-status .danger { color: #ff8a8a; font-weight: 500; }
+
+.t-foot {
+  margin-top: 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  flex-wrap: wrap;
+}
+.predicted {
+  font-size: 16px; color: var(--violet);
+  background: rgba(181,157,211,0.08);
+  border: 1px solid rgba(181,157,211,0.22);
+  padding: 8px 14px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 500;
+}
+.predicted::before { content: '◇'; opacity: 0.7; }
+.t-meta-row { display: flex; gap: 14px; align-items: center; font-size: 14px; color: var(--ink-3); font-family: 'DM Mono'; }
+.acct-tag {
+  font-size: 13px; letter-spacing: 0.5px; font-weight: 500;
+  padding: 4px 10px; border-radius: 5px;
+  background: rgba(255,255,255,0.04); color: var(--ink-3);
+  text-transform: lowercase;
+}
+.acct-tag.gmail { color: #ea9999; background: rgba(234,153,153,0.10); }
+.acct-tag.outlook-personal { color: #b59dd3; background: rgba(181,157,211,0.10); }
+.acct-tag.outlook-biz { color: #88c5d3; background: rgba(136,197,211,0.10); }
+.acct-tag.outlook { color: #b59dd3; background: rgba(181,157,211,0.10); }
+
+/* Doctrine row (silent kills) */
+.doctrine {
+  margin-top: 32px; padding: 22px 26px; margin-left: 32px; margin-right: 32px;
+  background: linear-gradient(135deg, rgba(255,214,0,0.05), rgba(167,227,204,0.03));
+  border: 1px dashed rgba(255,214,0,0.25);
+  border-radius: 14px;
+  display: flex; align-items: center; gap: 18px;
+}
+.doctrine-icon { font-size: 26px; opacity: 0.85; }
+.doctrine-text { flex: 1; font-size: 17px; color: var(--ink-2); line-height: 1.5; }
+.doctrine-text b { color: var(--gold); font-weight: 600; letter-spacing: 0.3px; }
+.doctrine-count {
+  font-family: 'DM Mono'; font-size: 22px; color: var(--gold); font-weight: 600;
+  background: rgba(255,214,0,0.10); padding: 8px 16px; border-radius: 8px;
+}
+
+/* Closed threads ribbon */
+.closed-ribbon {
+  margin: 32px 32px 8px;
+  display: flex; align-items: center; gap: 14px;
+  font-size: 14px; font-family: 'DM Mono'; color: var(--ink-3); letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.closed-ribbon::before, .closed-ribbon::after {
+  content: ''; flex: 1; height: 1px; background: var(--line);
+}
+
+.closed { padding: 0 32px; display: flex; flex-direction: column; gap: 10px; opacity: 0.65; }
+.closed .thread {
+  padding: 16px 20px 16px 24px;
+  background: transparent;
+}
+.closed .thread .t-title { font-size: 17px; color: var(--ink-2); }
+.closed .thread .t-status { display: none; }
+.closed .thread .t-foot { display: none; }
+
+/* Footer */
+.footer {
+  text-align: center; margin-top: 48px; padding: 22px;
+  font-family: 'DM Mono'; font-size: 14px; color: var(--ink-3);
+  letter-spacing: 0.8px; line-height: 1.6;
+}
+.footer .dot { color: var(--mint); }
+
+/* Trust note above triage log */
+.trust-note {
+  padding: 0 32px 18px; font-size: 17px; color: var(--ink-3);
+  font-style: italic; line-height: 1.55;
+}
+
+/* Triage log filter chips */
+.log-filter {
+  display: flex; gap: 10px; padding: 0 32px 20px; overflow-x: auto;
+  -ms-overflow-style: none; scrollbar-width: none; flex-wrap: wrap;
+}
+.log-filter::-webkit-scrollbar { display: none; }
+.logchip {
+  flex-shrink: 0;
+  padding: 11px 18px; border-radius: 8px;
+  background: transparent; border: 1px solid var(--line);
+  font-size: 16px; font-family: 'DM Mono'; letter-spacing: 0.3px; font-weight: 500;
+  color: var(--ink-2); cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 44px;
+}
+.logchip:hover { border-color: #34404f; color: var(--ink); }
+.logchip.active {
+  background: rgba(167,227,204,0.14); color: var(--mint);
+  border-color: rgba(167,227,204,0.45);
+}
+
+/* The log itself - dense but readable */
+.log {
+  margin: 0 32px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.logrow {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 22px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.logrow:first-child { border-top: none; }
+.logrow:hover { background: var(--bg-3); }
+.logrow.killed { opacity: 0.55; }
+.logrow.killed:hover { opacity: 0.95; }
+.logrow.uncertain {
+  background: rgba(239,68,68,0.04);
+  border-top: 1px solid rgba(239,68,68,0.20);
+}
+.logrow.uncertain + .logrow { border-top: 1px solid rgba(239,68,68,0.20); }
+.logrow.surfaced { background: rgba(167,227,204,0.05); }
+
+/* Category badges */
+.logbadge {
+  font-family: 'DM Mono'; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  text-align: center;
+  padding: 7px 0; border-radius: 6px;
+  width: 96px;
+}
+.logbadge.noise      { background: rgba(107,118,137,0.16); color: var(--ink-2); }
+.logbadge.newsletter { background: rgba(136,197,211,0.14); color: #88c5d3; }
+.logbadge.cold       { background: rgba(255,140,80,0.16); color: #ffa066; }
+.logbadge.broker     { background: rgba(167,227,204,0.16); color: var(--mint); }
+.logbadge.payment    { background: rgba(255,214,0,0.16); color: var(--gold); }
+.logbadge.personal   { background: rgba(181,157,211,0.16); color: var(--violet); }
+.logbadge.load       { background: rgba(34,197,94,0.16); color: var(--green); }
+.logbadge.compliance { background: rgba(234,179,8,0.16); color: var(--yellow); }
+.logbadge.uncertain  { background: rgba(239,68,68,0.18); color: var(--red); font-weight: 800; }
+
+.logbody { min-width: 0; }
+.logfrom {
+  font-family: 'DM Mono'; font-size: 16px;
+  color: var(--ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 6px;
+}
+.logsubj {
+  font-size: 19px; color: var(--ink); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.logrow.killed .logsubj { color: var(--ink-2); font-weight: 400; }
+
+.logact {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  flex-shrink: 0;
+}
+.logaction {
+  font-family: 'DM Mono'; font-size: 16px; font-weight: 600; letter-spacing: 0.4px;
+}
+.logaction.kill     { color: var(--ink-3); }
+.logaction.route    { color: var(--mint); }
+.logaction.pipeline { color: var(--gold); }
+.logaction.surface  { color: var(--mint); font-weight: 700; }
+.logaction.review   { color: var(--red); font-weight: 700; }
+.logwhy {
+  font-size: 13px; color: var(--ink-3); font-family: 'DM Mono';
+  letter-spacing: 0.2px;
+  max-width: 260px; text-align: right;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.log-more {
+  text-align: center; padding: 22px;
+  font-family: 'DM Mono'; font-size: 15px; color: var(--ink-3);
+  letter-spacing: 0.5px; cursor: pointer;
+}
+.log-more span:hover { color: var(--mint); }
+
+/* Narrow viewport adjustments — keep things readable */
+@media (max-width: 700px) {
+  .topbar, .hero, .chips, .sec-h, .threads, .closed, .trust-note, .log-filter, .doctrine, .closed-ribbon { padding-left: 18px; padding-right: 18px; }
+  .doctrine, .closed-ribbon { margin-left: 18px; margin-right: 18px; }
+  .log { margin-left: 18px; margin-right: 18px; }
+  .hero-num { font-size: 92px; }
+  .hero-label { font-size: 28px; }
+  .hero-zen { font-size: 17px; }
+  .t-title { font-size: 19px; }
+  .t-status { font-size: 16px; }
+  .predicted { font-size: 14px; }
+  .logrow { grid-template-columns: 84px 1fr auto; padding: 14px 16px; gap: 14px; }
+  .logbadge { width: 84px; font-size: 12px; }
+  .logsubj { font-size: 16px; }
+  .logfrom { font-size: 13px; }
+  .logaction { font-size: 14px; }
+  .logwhy { max-width: 140px; font-size: 11px; }
+  .sec-title { font-size: 22px; }
+}
+@media (max-width: 480px) {
+  .hero-num { font-size: 76px; }
+  .hero-label { font-size: 24px; }
+  .logrow { grid-template-columns: 72px 1fr; gap: 10px; padding: 12px 14px; }
+  .logact { grid-column: 2; align-items: flex-start; }
+  .logwhy { max-width: 100%; text-align: left; white-space: normal; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <div class="brand-name">BIK<span>Mail</span></div>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" title="Pull new mail from all inboxes">
+      <span class="refresh-icon" id="refresh-icon">↻</span>
+      <span class="refresh-label" id="refresh-label">refresh</span>
+    </button>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <span class="live"></span>
+      <span id="hero-context">All inboxes · last 7 days</span>
+      <span class="refresh-status" id="refresh-status"></span>
+    </div>
+    <div class="hero-numbers">
+      <div class="hero-row">
+        <div class="hero-num handled" id="hero-handled">—</div>
+        <div class="hero-label">handled</div>
+      </div>
+      <div class="hero-row">
+        <div class="hero-num need" id="hero-need">—</div>
+        <div class="hero-label" id="hero-need-label">need you</div>
+      </div>
+    </div>
+    <div class="hero-zen" id="hero-zen">Loading inboxes…</div>
+  </div>
+
+  <!-- CHIPS -->
+  <div class="chips">
+    <div class="chip active" data-acct="all">All <span class="chip-count" id="chip-count-all">—</span></div>
+    <div class="chip" data-acct="gmail"><span class="chip-dot" style="background:#ea9999"></span>biz · gmail <span class="chip-count" id="chip-count-gmail">—</span></div>
+    <div class="chip" data-acct="outlook-bmhertzig"><span class="chip-dot" style="background:#b59dd3"></span>personal <span class="chip-count" id="chip-count-outlook-bmhertzig">—</span></div>
+    <div class="chip" data-acct="outlook-bmhs3711"><span class="chip-dot" style="background:#88c5d3"></span>overflow <span class="chip-count" id="chip-count-outlook-bmhs3711">—</span></div>
+  </div>
+
+  <!-- LIVE THREADS -->
+  <div class="sec-h">
+    <div class="sec-title">Living Threads</div>
+    <div class="sec-meta" id="threads-meta">loading…</div>
+  </div>
+
+  <div class="threads" id="threads"><!-- populated by /api/threads --></div>
+
+  <!-- DOCTRINE / SILENT KILLS -->
+  <div class="doctrine" id="doctrine-row" style="display:none">
+    <span class="doctrine-icon">⚔️</span>
+    <div class="doctrine-text" id="doctrine-text">
+      <b>DOCTRINE</b> · loading…
+    </div>
+    <div class="doctrine-count" id="doctrine-count">—</div>
+  </div>
+
+  <!-- TRIAGE LOG (TRUST LAYER) -->
+  <div class="sec-h" style="margin-top: 28px;">
+    <div class="sec-title">Triage Log</div>
+    <div class="sec-meta" id="log-meta">last 24h · 47 decisions</div>
+  </div>
+  <div class="trust-note">
+    Every email. Every decision. Skim it, catch a wrong call, tap to open the real message.
+  </div>
+
+  <!-- Filter bar -->
+  <div class="log-filter">
+    <div class="logchip active" data-cat="all">All</div>
+    <div class="logchip" data-cat="noise">Noise</div>
+    <div class="logchip" data-cat="newsletter">Newsletters</div>
+    <div class="logchip" data-cat="cold">Cold pitch</div>
+    <div class="logchip" data-cat="broker">Broker</div>
+    <div class="logchip" data-cat="payment">Payment</div>
+    <div class="logchip" data-cat="personal">Personal</div>
+    <div class="logchip" data-cat="load">Load</div>
+    <div class="logchip" data-cat="uncertain">Review needed</div>
+  </div>
+
+  <div class="log" id="log"><!-- populated by /api/log --></div>
+
+  <div class="log-more" id="log-more"></div>
+
+  <div class="footer">
+    BIK MAIL <span class="dot">·</span> live · 3 inboxes · 38 broker domains in graph · doctrine on
+  </div>
+
+</div>
+
+<script>
+// =====================================================================
+// BIK MAIL · live data renderer
+// Fetches /api/counters, /api/threads, /api/log and renders into containers.
+// Loopback hits don't need Bearer token (server bypasses auth on direct localhost).
+// =====================================================================
+
+// PWA shell lives on github.io; backend is on the tailnet. backendUrl + token
+// are entered in the setup overlay on first run, persisted in localStorage.
+let API = localStorage.getItem('bikmail_backend_url') || '';
+let BIKMAIL_TOKEN = localStorage.getItem('bikmail_token') || '';
+const heroHandled = document.getElementById('hero-handled');
+const heroNeed = document.getElementById('hero-need');
+const heroNeedLabel = document.getElementById('hero-need-label');
+const heroCtx = document.getElementById('hero-context');
+const heroZen = document.getElementById('hero-zen');
+const threadsEl = document.getElementById('threads');
+const threadsMeta = document.getElementById('threads-meta');
+const logEl = document.getElementById('log');
+const logMeta = document.getElementById('log-meta');
+const logMore = document.getElementById('log-more');
+const doctrineRow = document.getElementById('doctrine-row');
+const doctrineText = document.getElementById('doctrine-text');
+const doctrineCount = document.getElementById('doctrine-count');
+
+const ACCOUNT_LABEL = {
+  'all': 'All inboxes',
+  'gmail': 'biz · gmail',
+  'outlook-bmhertzig': 'personal · outlook',
+  'outlook-bmhs3711': 'overflow · outlook',
+};
+
+const ZEN_TEMPLATES = {
+  zero: [
+    'Doctrine handled everything. The inbox you used to drown in is silent.',
+    'Inbox zero by default. Today\'s email is the work, not the noise.',
+    'No fires. No bullshit. Take the morning back.',
+  ],
+  few: (n) => `${n} ${n === 1 ? 'thing wants' : 'things want'} your eyes. Take a breath. The rest is handled.`,
+  many: (n) => `${n} surfaced. Drive Mode would brief these in 30 seconds.`,
+};
+
+let activeAcct = 'all';
+let activeCat = 'all';
+
+function pickZen(need) {
+  if (need === 0) return ZEN_TEMPLATES.zero[Math.floor(Math.random() * ZEN_TEMPLATES.zero.length)];
+  if (need <= 5) return ZEN_TEMPLATES.few(need);
+  return ZEN_TEMPLATES.many(need);
+}
+
+function fmtTimeAgo(ts) {
+  if (!ts) return '';
+  const sec = Math.floor(Date.now() / 1000) - ts;
+  if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
+  return `${Math.floor(sec / 86400)}d ago`;
+}
+
+async function fetchJSON(path) {
+  const headers = {};
+  if (BIKMAIL_TOKEN) headers['Authorization'] = 'Bearer ' + BIKMAIL_TOKEN;
+  const r = await fetch(API + path, { headers });
+  if (r.status === 401) { showSetup('Token rejected'); throw new Error('401'); }
+  if (!r.ok) throw new Error(`${path} → ${r.status}`);
+  return r.json();
+}
+
+async function loadCounters() {
+  try {
+    const data = await fetchJSON(`/api/counters?acct=${activeAcct}`);
+    heroHandled.textContent = data.handled.toLocaleString();
+    heroNeed.textContent = data.need.toLocaleString();
+    heroCtx.textContent = `${ACCOUNT_LABEL[activeAcct] || activeAcct} · last 7 days`;
+    heroZen.textContent = pickZen(data.need);
+    heroNeed.classList.toggle('zero', data.need === 0);
+    heroNeed.classList.toggle('has', data.need > 0);
+
+    // chip counts
+    const per = data.per_account || {};
+    Object.keys(per).forEach(k => {
+      const el = document.getElementById(`chip-count-${k}`);
+      if (el) el.textContent = per[k].toLocaleString();
+    });
+  } catch (err) {
+    console.error('counters', err);
+    heroZen.textContent = 'Connection issue · check server log';
+  }
+}
+
+function renderThread(t) {
+  const pulseCls = t.pulse || 'gray';
+  const wrap = document.createElement('div');
+  wrap.className = `thread ${pulseCls}` + (pulseCls === 'gray' ? ' dim' : '');
+
+  const acctTags = (t.accounts || [])
+    .map(a => `<span class="acct-tag ${a.replace(/[^a-z0-9-]/gi, '-').toLowerCase()}">${(a.split('-')[0] || a)}</span>`)
+    .join(' ');
+  const predicted = t.predicted_next_text
+    ? `<span class="predicted">${escape(t.predicted_next_text)}</span>`
+    : '';
+
+  wrap.innerHTML = `
+    <div class="t-head">
+      <div class="t-title-row">
+        <span class="pulse ${pulseCls}"></span>
+        <span class="t-title">${escape(t.title || '(no subject)')}</span>
+      </div>
+      <span class="t-type">${escape(t.type || '')}</span>
+    </div>
+    <div class="t-status">
+      ${escape(t.status_text || '')}
+    </div>
+    <div class="t-foot">
+      ${predicted}
+      <span class="t-meta-row">${acctTags} · ${t.msg_count || 0} msg${t.msg_count === 1 ? '' : 's'}</span>
+    </div>
+  `;
+  if (t.last_web_url) {
+    wrap.style.cursor = 'pointer';
+    wrap.addEventListener('click', () => window.open(t.last_web_url, '_blank'));
+  }
+  return wrap;
+}
+
+async function loadThreads() {
+  try {
+    const data = await fetchJSON(`/api/threads?acct=${activeAcct}&limit=30`);
+    threadsEl.innerHTML = '';
+    const visible = data.threads.filter(t => t.pulse !== 'gray');
+    const dim = data.threads.filter(t => t.pulse === 'gray');
+
+    visible.forEach(t => threadsEl.appendChild(renderThread(t)));
+    threadsMeta.textContent = visible.length === 0
+      ? 'all quiet · 0 active'
+      : `heat sort · ${visible.length} active`;
+
+    // dim closed/handled threads in a "closed this week" ribbon
+    if (dim.length > 0) {
+      const ribbon = document.createElement('div');
+      ribbon.className = 'closed-ribbon';
+      ribbon.textContent = `closed this week · ${dim.length}`;
+      threadsEl.parentElement.insertBefore(ribbon, doctrineRow);
+
+      const closedWrap = document.createElement('div');
+      closedWrap.className = 'closed';
+      dim.slice(0, 5).forEach(t => closedWrap.appendChild(renderThread(t)));
+      threadsEl.parentElement.insertBefore(closedWrap, doctrineRow);
+    }
+  } catch (err) {
+    console.error('threads', err);
+    threadsEl.innerHTML = '<div style="padding:20px;color:#aab4c2">Connection issue.</div>';
+  }
+}
+
+function badgeFor(category) {
+  const map = {
+    noise: 'noise', newsletter: 'news', cold: 'cold',
+    broker: 'broker', payment: 'payment', personal: 'personal',
+    load: 'load', compliance: 'compliance',
+    uncertain: 'uncertain', product: 'broker', financial: 'payment',
+  };
+  return map[category] || 'noise';
+}
+
+function actionDisplay(action) {
+  return ({
+    'killed':   { cls: 'kill',     label: '▶ killed' },
+    'routed':   { cls: 'route',    label: '→ thread' },
+    'pipeline': { cls: 'pipeline', label: '⚙ pipeline' },
+    'surfaced': { cls: 'surface',  label: '★ surfaced' },
+    'review':   { cls: 'review',   label: '? review' },
+  })[action] || { cls: 'kill', label: action };
+}
+
+function rowClassFor(action) {
+  if (action === 'killed') return 'killed';
+  if (action === 'surfaced') return 'surfaced';
+  if (action === 'review') return 'uncertain';
+  return '';
+}
+
+async function loadLog() {
+  try {
+    const data = await fetchJSON(`/api/log?acct=${activeAcct}&cat=${activeCat}&limit=80`);
+    logEl.innerHTML = '';
+    if (data.log.length === 0) {
+      logEl.innerHTML = '<div style="padding:24px;text-align:center;color:#6b7689;font-size:12px">No decisions in this slice.</div>';
+    }
+    data.log.forEach(m => {
+      const row = document.createElement('div');
+      row.className = `logrow ${rowClassFor(m.action)}`;
+      row.dataset.acct = m.account;
+      row.dataset.cat = m.category;
+      const a = actionDisplay(m.action);
+      const badge = badgeFor(m.category);
+      const badgeText = (m.category === 'newsletter' ? 'news'
+                       : m.category === 'uncertain' ? '?'
+                       : m.category).slice(0, 8);
+      row.innerHTML = `
+        <div class="logbadge ${badge}">${escape(badgeText)}</div>
+        <div class="logbody">
+          <div class="logfrom">${escape(m.sender_email || m.sender || '?')}</div>
+          <div class="logsubj">${escape(m.subject || '(no subject)')}</div>
+        </div>
+        <div class="logact">
+          <div class="logaction ${a.cls}">${a.label}</div>
+          <div class="logwhy">${escape(m.action_reason || '')}</div>
+        </div>
+      `;
+      if (m.web_url) {
+        row.addEventListener('click', () => window.open(m.web_url, '_blank'));
+      }
+      logEl.appendChild(row);
+    });
+    logMeta.textContent = `last 24h · ${data.count} decisions`;
+    logMore.innerHTML = data.count >= 80 ? '<span>showing latest 80</span>' : '';
+  } catch (err) {
+    console.error('log', err);
+  }
+}
+
+function escape(s) {
+  return String(s || '').replace(/[<>&"']/g, c => ({
+    '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+async function refreshAll() {
+  // remove any prior closed-ribbon insertion before re-render
+  document.querySelectorAll('.closed-ribbon, .closed').forEach(el => el.remove());
+  await Promise.all([loadCounters(), loadThreads(), loadLog()]);
+  doctrineRow.style.display = '';
+  // doctrine count = total killed in window for current acct
+  // (rough proxy: handled - active green/yellow threads)
+  doctrineText.innerHTML = '<b>DOCTRINE</b> · 38 broker domains · 51 doctrine rules · cold/noise/newsletter auto-handled';
+  doctrineCount.textContent = '−' + (parseInt(heroHandled.textContent.replace(/,/g, '')) - parseInt(heroNeed.textContent || '0'));
+}
+
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    activeAcct = c.dataset.acct;
+    refreshAll();
+  });
+});
+
+// =====================================================================
+// REFRESH BUTTON — pulls new mail from all inboxes via /api/refresh
+// =====================================================================
+const refreshBtn = document.getElementById('refresh-btn');
+const refreshIcon = document.getElementById('refresh-icon');
+const refreshLabel = document.getElementById('refresh-label');
+const refreshStatus = document.getElementById('refresh-status');
+
+async function checkFreshness() {
+  // /api/health gives ts; we'll use the latest crawl_run to know when the
+  // inbox was last pulled. For now, just probe latest msg ts.
+  try {
+    const data = await fetchJSON('/api/log?acct=all&limit=1');
+    if (data.log.length === 0) {
+      refreshStatus.textContent = '';
+      return;
+    }
+    const ageSec = Math.floor(Date.now() / 1000) - data.log[0].ts;
+    let txt = '';
+    if (ageSec < 600) { txt = '✓ fresh'; refreshStatus.className = 'refresh-status fresh'; }
+    else if (ageSec < 3600) txt = `· last pulled ${Math.floor(ageSec / 60)}m ago`;
+    else if (ageSec < 86400) txt = `· last pulled ${Math.floor(ageSec / 3600)}h ago`;
+    else txt = `· last pulled ${Math.floor(ageSec / 86400)}d ago`;
+    refreshStatus.textContent = txt;
+  } catch (err) { /* ignore */ }
+}
+
+async function doRefresh() {
+  if (refreshBtn.disabled) return;
+  refreshBtn.disabled = true;
+  refreshBtn.classList.remove('done', 'error');
+  refreshBtn.classList.add('spinning');
+  refreshLabel.textContent = 'pulling…';
+  refreshStatus.textContent = '· crawling 3 inboxes…';
+  refreshStatus.className = 'refresh-status';
+  try {
+    const t0 = Date.now();
+    const refreshHeaders = {};
+    if (BIKMAIL_TOKEN) refreshHeaders['Authorization'] = 'Bearer ' + BIKMAIL_TOKEN;
+    const r = await fetch(API + '/api/refresh', { method: 'POST', headers: refreshHeaders });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const dt = ((Date.now() - t0) / 1000).toFixed(1);
+    const totalNew = (data.accounts || []).reduce((s, a) => s + (a.new || 0), 0);
+    const totalPulled = (data.accounts || []).reduce((s, a) => s + (a.pulled || 0), 0);
+    refreshBtn.classList.remove('spinning');
+    refreshBtn.classList.add('done');
+    refreshLabel.textContent = `+${totalNew} new`;
+    refreshStatus.textContent = `· ${totalPulled} pulled · ${dt}s`;
+    refreshStatus.className = 'refresh-status fresh';
+    // Refresh all UI panels with the new data
+    await refreshAll();
+    // Reset button label after a moment
+    setTimeout(() => {
+      refreshBtn.classList.remove('done');
+      refreshLabel.textContent = 'refresh';
+      refreshBtn.disabled = false;
+    }, 2500);
+  } catch (err) {
+    console.error('refresh failed', err);
+    refreshBtn.classList.remove('spinning');
+    refreshBtn.classList.add('error');
+    refreshLabel.textContent = 'failed';
+    refreshStatus.textContent = '· ' + err.message;
+    refreshStatus.className = 'refresh-status';
+    setTimeout(() => {
+      refreshBtn.classList.remove('error');
+      refreshLabel.textContent = 'refresh';
+      refreshBtn.disabled = false;
+    }, 4000);
+  }
+}
+refreshBtn.addEventListener('click', doRefresh);
+
+document.querySelectorAll('.logchip').forEach(lc => {
+  lc.addEventListener('click', () => {
+    document.querySelectorAll('.logchip').forEach(x => x.classList.remove('active'));
+    lc.classList.add('active');
+    activeCat = lc.dataset.cat;
+    loadLog();
+  });
+});
+
+// ── Setup overlay (first run / unset backend) ───────────────────────────
+function showSetup(errorMsg) {
+  let overlay = document.getElementById('bm-setup-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'bm-setup-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,13,18,0.96);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;';
+    overlay.innerHTML = `
+      <div style="background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:24px;max-width:420px;width:100%;color:var(--ink);font-family:'DM Sans',sans-serif;">
+        <h2 style="margin:0 0 8px;font-size:20px;">Connect BIK Mail</h2>
+        <p style="margin:0 0 16px;color:var(--ink-2);font-size:13px;">First-run setup. Both values are kept in this browser only.</p>
+        <label style="display:block;margin-bottom:12px;font-size:12px;color:var(--ink-2);">Backend URL
+          <input id="bm-setup-url" type="url" placeholder="https://...ts.net:8455" style="display:block;width:100%;margin-top:4px;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:'DM Mono',monospace;font-size:12px;">
+        </label>
+        <label style="display:block;margin-bottom:12px;font-size:12px;color:var(--ink-2);">BIK_MAIL_TOKEN
+          <input id="bm-setup-token" type="password" placeholder="paste token" style="display:block;width:100%;margin-top:4px;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:'DM Mono',monospace;font-size:12px;">
+        </label>
+        <button id="bm-setup-btn" style="display:block;width:100%;padding:12px;background:var(--mint);color:var(--bg);border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">Connect</button>
+        <div id="bm-setup-err" style="margin-top:10px;color:var(--red);font-size:12px;"></div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#bm-setup-url').value = API;
+    overlay.querySelector('#bm-setup-token').value = BIKMAIL_TOKEN;
+    overlay.querySelector('#bm-setup-btn').addEventListener('click', async () => {
+      const url = overlay.querySelector('#bm-setup-url').value.trim().replace(/\/$/, '');
+      const tok = overlay.querySelector('#bm-setup-token').value.trim();
+      const errEl = overlay.querySelector('#bm-setup-err');
+      if (!url || !tok) { errEl.textContent = 'Both fields required'; return; }
+      try {
+        const r = await fetch(url + '/api/health', { headers: { 'Authorization': 'Bearer ' + tok } });
+        if (r.status === 401) throw new Error('Token rejected');
+        if (!r.ok) throw new Error('Backend returned ' + r.status);
+        API = url; BIKMAIL_TOKEN = tok;
+        localStorage.setItem('bikmail_backend_url', url);
+        localStorage.setItem('bikmail_token', tok);
+        overlay.remove();
+        refreshAll().then(checkFreshness);
+      } catch (e) { errEl.textContent = e.message || 'connection failed'; }
+    });
+  }
+  if (errorMsg) overlay.querySelector('#bm-setup-err').textContent = errorMsg;
+}
+
+// ── Boot ────────────────────────────────────────────────────────────────
+if (!API || !BIKMAIL_TOKEN) {
+  showSetup();
+} else {
+  refreshAll().then(checkFreshness);
+  // Auto-refresh every 60s — the inbox feels alive
+  setInterval(() => { loadCounters().catch(()=>{}); checkFreshness().catch(()=>{}); }, 60_000);
+}
+
+// ── Service worker + auto-sync build pill ──
+// sw.js's CACHE_NAME is the source of truth. The pill (if any) reflects it.
+if ('serviceWorker' in navigator) {
+  fetch('./sw.js?_=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(t => {
+      const m = t.match(/CACHE_NAME\s*=\s*["']([^"']+)["']/);
+      const ver = (m && m[1].match(/v\d+/i)) ? m[1].match(/v\d+/i)[0] : null;
+      if (ver) {
+        const pill = document.querySelector('.build-pill') || document.getElementById('buildPill');
+        if (pill) pill.textContent = ver;
+        navigator.serviceWorker.register('./sw.js?' + ver).catch(() => {});
+      } else {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+    })
+    .catch(() => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
