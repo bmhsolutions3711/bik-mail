@@ -1,6 +1,6 @@
 // BIK Mail PWA shell — network-first SW. Backend API calls bypass cache.
 // CACHE_NAME is the single source of truth — index.html's build pill auto-syncs.
-const CACHE_NAME = "bik-mail-v1";
+const CACHE_NAME = "bik-mail-v2";
 const SHELL = [
   "./",
   "./index.html",
